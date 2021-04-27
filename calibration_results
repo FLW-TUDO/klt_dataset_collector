@@ -1,0 +1,49 @@
+Result:
+{ Hand-Eye transformation: [ [-0.704581,  0.708002, -0.047939, -173.467575], 
+  [-0.707079, -0.706167, -0.036985,  465.423706], 
+  [-0.060038,  0.007837,  0.998165, -324.630219], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.285333, Residual for translation in mm: 143.529 }, { Residual for rotation in deg: 0.231647, Residual for translation in mm: 87.1525 }, { Residual for rotation in deg: 0.133519, Residual for translation in mm: 95.6467 }, { Residual for rotation in deg: 0.0966915, Residual for translation in mm: 45.9582 }, { Residual for rotation in deg: 0.158534, Residual for translation in mm: 159.647 } } }
+
+
+Result:
+{ Hand-Eye transformation: [ [-0.703345,  0.709233, -0.047903,  35.924416], 
+  [-0.708995, -0.704780, -0.024735,  117.342506], 
+  [-0.051304,  0.016565,  0.998546, -611.714417], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.291378, Residual for translation in mm: 203.19 }, { Residual for rotation in deg: 0.415456, Residual for translation in mm: 222.189 }, { Residual for rotation in deg: 0.341358, Residual for translation in mm: 291.812 }, { Residual for rotation in deg: 0.0835257, Residual for translation in mm: 81.1837 }, { Residual for rotation in deg: 0.182467, Residual for translation in mm: 393.82 }, { Residual for rotation in deg: 0.317454, Residual for translation in mm: 333.218 }, { Residual for rotation in deg: 0.453735, Residual for translation in mm: 177.616 }, { Residual for rotation in deg: 0.369947, Residual for translation in mm: 400.198 } } }
+
+
+Result:
+{ Hand-Eye transformation: [ [-0.704043,  0.708469, -0.048935,  12.239848], 
+  [-0.708298, -0.705514, -0.023753,  132.122879], 
+  [-0.051353,  0.017938,  0.998519, -620.551025], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.39114, Residual for translation in mm: 204.088 }, { Residual for rotation in deg: 0.216251, Residual for translation in mm: 255.733 }, { Residual for rotation in deg: 0.388616, Residual for translation in mm: 300.441 }, { Residual for rotation in deg: 0.192447, Residual for translation in mm: 87.9399 }, { Residual for rotation in deg: 0.406843, Residual for translation in mm: 346.282 }, { Residual for rotation in deg: 0.404683, Residual for translation in mm: 161.754 }, { Residual for rotation in deg: 0.284152, Residual for translation in mm: 385.143 }, { Residual for rotation in deg: 0.110689, Residual for translation in mm: 155.519 }, { Residual for rotation in deg: 0.514651, Residual for translation in mm: 320.054 }, { Residual for rotation in deg: 0.11902, Residual for translation in mm: 97.0023 }, { Residual for rotation in deg: 0.409207, Residual for translation in mm: 82.398 }, { Residual for rotation in deg: 0.0736139, Residual for translation in mm: 118.813 } } }
+
+
+Result:
+{ Hand-Eye transformation: [ [ 0.005251,  0.999813, -0.018605, -51.035885], 
+  [-0.998698,  0.004300, -0.050824, -62.640484], 
+  [-0.050735,  0.018847,  0.998534, -698.826111], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.258466, Residual for translation in mm: 130.654 }, { Residual for rotation in deg: 0.269885, Residual for translation in mm: 148.142 }, { Residual for rotation in deg: 0.185242, Residual for translation in mm: 193.933 }, { Residual for rotation in deg: 0.169038, Residual for translation in mm: 344.512 }, { Residual for rotation in deg: 0.230481, Residual for translation in mm: 367.281 }, { Residual for rotation in deg: 0.959855, Residual for translation in mm: 513.823 }, { Residual for rotation in deg: 0.11053, Residual for translation in mm: 254.115 }, { Residual for rotation in deg: 0.137504, Residual for translation in mm: 225.738 }, { Residual for rotation in deg: 0.226873, Residual for translation in mm: 230.426 }, { Residual for rotation in deg: 0.796313, Residual for translation in mm: 641.631 }, { Residual for rotation in deg: 0.316481, Residual for translation in mm: 450.154 } } }
+
+________________________________________________________________________________________________________________
+Result:
+{ Hand-Eye transformation: [ [ 0.005374,  0.999856, -0.016098, -88.056381], 
+  [-0.998704,  0.004552, -0.050696,  56.207195], 
+  [-0.050616,  0.016350,  0.998584,  65.440712], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.228364, Residual for translation in mm: 4.00772 }, { Residual for rotation in deg: 0.349725, Residual for translation in mm: 6.93685 }, { Residual for rotation in deg: 0.21057, Residual for translation in mm: 3.20342 }, { Residual for rotation in deg: 0.150035, Residual for translation in mm: 0.75578 }, { Residual for rotation in deg: 0.0978471, Residual for translation in mm: 2.44265 }, { Residual for rotation in deg: 1.02883, Residual for translation in mm: 20.7424 }, { Residual for rotation in deg: 0.157897, Residual for translation in mm: 3.48778 }, { Residual for rotation in deg: 0.145319, Residual for translation in mm: 2.33128 }, { Residual for rotation in deg: 0.189868, Residual for translation in mm: 1.78741 }, { Residual for rotation in deg: 0.857725, Residual for translation in mm: 18.3915 }, { Residual for rotation in deg: 0.246963, Residual for translation in mm: 4.40914 } } }
+_________________________________________________________________________________________________________________
+Result:
+{ Hand-Eye transformation: [ [ 0.015408,  0.999720, -0.017979, -84.138397], 
+  [-0.998248,  0.014353, -0.057402,  62.878891], 
+  [-0.057128,  0.018832,  0.998189,  61.887184], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.196672, Residual for translation in mm: 2.52321 }, { Residual for rotation in deg: 0.220145, Residual for translation in mm: 6.85783 }, { Residual for rotation in deg: 0.447731, Residual for translation in mm: 7.32266 }, { Residual for rotation in deg: 0.199542, Residual for translation in mm: 2.8665 }, { Residual for rotation in deg: 0.351016, Residual for translation in mm: 7.80772 }, { Residual for rotation in deg: 0.122363, Residual for translation in mm: 3.24909 }, { Residual for rotation in deg: 0.0864355, Residual for translation in mm: 1.51592 } } }
+ 
+_________________________________________________________________________________________________________________
+BEST RESULT
+_________________________________________________________________________________________________________________
+Result:
+{ Hand-Eye transformation: [ [ 0.015231,  0.999728, -0.017669, -85.517654], 
+  [-0.998412,  0.014248, -0.054505,  61.033829], 
+  [-0.054238,  0.018471,  0.998357,  57.805283], 
+  [ 0.000000,  0.000000,  0.000000,  1.000000] ], Per-pose calibration residuals: { { Residual for rotation in deg: 0.46659, Residual for translation in mm: 10.2164 }, { Residual for rotation in deg: 0.359745, Residual for translation in mm: 4.68827 }, { Residual for rotation in deg: 0.916766, Residual for translation in mm: 14.0216 }, { Residual for rotation in deg: 0.153652, Residual for translation in mm: 3.99587 }, { Residual for rotation in deg: 0.449411, Residual for translation in mm: 7.04298 }, { Residual for rotation in deg: 0.164859, Residual for translation in mm: 4.42256 }, { Residual for rotation in deg: 0.149198, Residual for translation in mm: 4.02937 }, { Residual for rotation in deg: 0.184883, Residual for translation in mm: 3.93503 }, { Residual for rotation in deg: 0.273237, Residual for translation in mm: 1.74257 }, { Residual for rotation in deg: 0.333705, Residual for translation in mm: 6.83704 }, { Residual for rotation in deg: 0.439296, Residual for translation in mm: 9.63951 }, { Residual for rotation in deg: 0.436539, Residual for translation in mm: 8.44857 }, { Residual for rotation in deg: 0.0828002, Residual for translation in mm: 3.03588 }, { Residual for rotation in deg: 0.479633, Residual for translation in mm: 7.43029 }, { Residual for rotation in deg: 0.754536, Residual for translation in mm: 12.7766 }, { Residual for rotation in deg: 0.500504, Residual for translation in mm: 13.2756 } } }
+_________________________________________________________________________________________________________________
