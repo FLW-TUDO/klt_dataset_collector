@@ -1,0 +1,5 @@
+<launch>
+    <node name="zivid_tf_publisher" pkg="klt_dataset_collector" type="zivid_tf_publisher.py" />
+    <node name="iiwa_tf_publisher" pkg="klt_dataset_collector" type="iiwa_tf_publisher.py" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find klt_dataset_collector)/rviz/scene.rviz"/>
+</launch>

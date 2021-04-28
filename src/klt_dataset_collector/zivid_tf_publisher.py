@@ -12,7 +12,7 @@ def main():
         [-0.054238,  0.018471,  0.998357,  57.805283], 
         [ 0.000000,  0.000000,  0.000000,  1.000000 ]])
     r = R.from_matrix(cal_mat[0:3,0:3])
-    translation = cal_mat[0:3, 3]
+    translation = cal_mat[0:3, 3]/1000
     rotation = r.as_quat()
     print(translation)
     print(rotation)
