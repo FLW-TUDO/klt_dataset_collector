@@ -54,10 +54,13 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>iiwa_ros</build_depend>
+  <build_depend>roscpp</build_depend>
   <build_depend>zivid_camera</build_depend>
   <build_export_depend>iiwa_ros</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>zivid_camera</build_export_depend>
   <exec_depend>iiwa_ros</exec_depend>
+  <exec_depend>roscpp</exec_depend>
   <exec_depend>zivid_camera</exec_depend>
 
 
