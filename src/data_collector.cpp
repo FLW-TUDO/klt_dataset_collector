@@ -19,7 +19,7 @@ sensor_msgs::PointCloud2 pc2_zivid_msg;
 void capture_assistant_suggest_settings()
 {
   zivid_camera::CaptureAssistantSuggestSettings cass;
-  cass.request.max_capture_time = ros::Duration{ 1.20 };
+  cass.request.max_capture_time = ros::Duration{ 10.00 };
   cass.request.ambient_light_frequency =
       zivid_camera::CaptureAssistantSuggestSettings::Request::AMBIENT_LIGHT_FREQUENCY_NONE;
 
@@ -47,7 +47,8 @@ int main(int argc, char **argv)
   spinner.start();
 
   auto points_sub = nh.subscribe("/zivid_camera/points/xyzrgba", 10, on_points);
-  ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud2>("/point_cloud/cloud_transformed", 1);
+  ros::Publisher pub = nh.advertise<sensor_msgs::PointCloud2>("/point_cloud/cloud_transformed", 10);
+  ros::Publisher pub_merged = nh.advertise<sensor_msgs::PointCloud2>("/point_cloud/cloud_merged", 10);
 
   tf::TransformListener listener;
 
@@ -57,11 +58,11 @@ int main(int argc, char **argv)
 
   // capture positions
   float position[2][3] = {
-    {0.653966303718863, 0.3916834478716141, -0.12949275619231873},
-    {0.6185055234985145, -0.4643385077623673, 0.2250001532518916}};
+    {0.506117809325929, -0.36538629946360257, 0.32621662675008856},
+    {0.1960708791023984, 0.5577574555894433, -0.026876493187485948}};
   float orientation[2][4] = {
-    {0.8857424855232239, 0.42670773623355057, 0.08713615390481165, 0.16058647412382923},
-    {-0.45447058309696803, 0.8438899517059326, 0.23677301747020152, 0.15888606578577916}};
+    {0.6849232912063599, -0.6465909588241828, 0.13713796034869008, -0.3065834786850864},
+    {0.42426899813017876, 0.8014302253723145, 0.08913723921969446, 0.4120193811868045}};
 
   ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/iiwa/command/CartesianPose", 10);
   while (0 == pose_pub.getNumSubscribers()) {
@@ -69,12 +70,14 @@ int main(int argc, char **argv)
   }
   ros::Duration(0.2).sleep();
 
+  sensor_msgs::PointCloud2 clouds[2];
+
   geometry_msgs::PoseStamped msg;
   msg.header.frame_id = "iiwa_link_0";
-  msg.header.stamp = ros::Time::now();
   for (int i = 0; i < 2; i++)
   {
     ROS_INFO("Moving to position");
+    msg.header.stamp = ros::Time::now();
     msg.header.seq = i;
     msg.pose.position.x  = position[i][0];
     msg.pose.position.y  = position[i][1];
@@ -84,17 +87,41 @@ int main(int argc, char **argv)
     msg.pose.orientation.z  = orientation[i][2];
     msg.pose.orientation.w  = orientation[i][3];
     pose_pub.publish(msg);
-    ros::Duration(5).sleep();
+    ros::Duration(20).sleep();
     // capture image
     capture();
-    ros::Duration(2).sleep(); // wait for capture to finish
+    ros::Duration(5).sleep(); // wait for capture to finish
     // Convert point cloud to iiwa_link_0 frame
     sensor_msgs::PointCloud2 pc2_iiwa_msg;
     pcl_ros::transformPointCloud("iiwa_link_0", pc2_zivid_msg, pc2_iiwa_msg, listener);
     pub.publish(pc2_iiwa_msg);
+    clouds[i] = pc2_iiwa_msg;
+    // crop box filter
 
     ROS_INFO("Capturing finished");
   }
+
+  // Stitch (not register) the clouds
+  // Merge metadata
+  sensor_msgs::PointCloud2 MergedCloud = clouds[0];
+  sensor_msgs::PointCloud2 Cloud1 = clouds[1];
+
+  MergedCloud.width += Cloud1.width;
+
+  // Re-size the merged data array to make space for the new points
+  uint64_t OriginalSize = MergedCloud.data.size();
+  MergedCloud.data.resize(MergedCloud.data.size() + Cloud1.data.size());
+
+  // Copy the new points from Cloud1 into the second half of the MergedCloud array
+  std::copy(
+    Cloud1.data.begin(),
+    Cloud1.data.end(),
+    MergedCloud.data.begin() + OriginalSize);
+
+  MergedCloud.header.seq = 1;
+  MergedCloud.header.stamp = ros::Time::now();
+  pub_merged.publish(MergedCloud);
+  ros::Duration(5).sleep(); // wait for last message to publish
 
   return 0;
 }
