@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /Camera1/Status1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz/Selection
@@ -91,6 +90,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         Camera: true
         Grid: true
         PointCloud2: true
@@ -136,6 +136,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         Camera: true
         Grid: true
         PointCloud2: true
@@ -154,7 +155,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: ""
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -166,6 +167,34 @@ Visualization Manager:
       Size (m): 0.0005000000237487257
       Style: Flat Squares
       Topic: /point_cloud/cloud_merged
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.0005000000237487257
+      Style: Flat Squares
+      Topic: /passthrough/box_filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -198,7 +227,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 6.226115703582764
+      Distance: 3.148413896560669
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -206,17 +235,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.0674564838409424
-        Y: -0.10931182652711868
-        Z: -0.7090549468994141
+        X: 0.9783937931060791
+        Y: -0.14998388290405273
+        Z: -0.6986899971961975
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6903983354568481
+      Pitch: 0.8203983306884766
       Target Frame: <Fixed Frame>
-      Yaw: 2.145390272140503
+      Yaw: 1.885391354560852
     Saved: ~
 Window Geometry:
   Camera:

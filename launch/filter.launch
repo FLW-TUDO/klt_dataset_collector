@@ -6,8 +6,8 @@
     <remap from="~output" to="/passthrough/z_filtered"/>
     <rosparam>
       filter_field_name: z
-      filter_limit_min:  -0.742
-      filter_limit_max:  2.0
+      filter_limit_min:  -0.528
+      filter_limit_max:  0.0
       filter_limit_negative: False
     </rosparam>
     <param name="~input_frame" type="str" value="iiwa_link_0" />
@@ -22,8 +22,6 @@
       filter_limit_min:  -0.24
       filter_limit_max:  0.3
       filter_limit_negative: False
-      input_frame: iiwa_link_0
-      output_frame: iiwa_link_0
     </rosparam>
     <param name="~input_frame" type="str" value="iiwa_link_0" />
     <param name="~output_frame" type="str" value="iiwa_link_0" />
@@ -38,8 +36,6 @@
       filter_limit_min:  0.83
       filter_limit_max:  1.17
       filter_limit_negative: False
-      input_frame: iiwa_link_0
-      output_frame: iiwa_link_0
     </rosparam>
     <param name="~input_frame" type="str" value="iiwa_link_0" />
     <param name="~output_frame" type="str" value="iiwa_link_0" />
