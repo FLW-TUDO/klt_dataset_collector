@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import PoseStamped
-from sensor_msgs.msg import PointCloud2
-from zivid_camera.srv import *
-
 import roslaunch
 import argparse
 import os
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
 
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import Image
+
+from zivid_camera.srv import *
+
+bridge = CvBridge()
 
 class Sample:
     def __init__(self):
@@ -40,6 +45,13 @@ class Sample:
     def on_points(self, data):
         rospy.loginfo("PointCloud received")
 
+def rgb_callback(msg, args):
+    rgb_img = bridge.imgmsg_to_cv2(msg, "bgr8")
+    cv2.imwrite(args[0]+ '/color_' + str(args[1]) + '.png', rgb_img)
+
+def depth_callback(msg, args):
+    depth_img = bridge.imgmsg_to_cv2(msg, "32FC1") * 100  # multiply by 100 to convert to cm
+    cv2.imwrite(args[0]+ '/depth_' + str(args[1]) + '.png', depth_img)
 
 def main():
     # read arguments
@@ -47,6 +59,7 @@ def main():
     parser.add_argument("--dataset-path", default='/home/iiwa/segmentation/flw_dataset')
     parser.add_argument("--start-count", type=int, default=0)
     args = parser.parse_args()
+    rospy.loginfo('args parsed correctly')
 
     if not os.path.exists(args.dataset_path):
         rospy.logerr("Error: dataset folder doesn't exist")
@@ -56,14 +69,10 @@ def main():
     pub = rospy.Publisher('/iiwa/command/CartesianPose', PoseStamped, queue_size=1)
 
     # setup PCD cloud saver
-    saver_package = 'pcl_ros'
-    saver_node = 'pointcloud_to_pcd'
-    point_cloud_topic = '/passthrough/box_filtered'
-    frame = 'bin_link'
-    cli_args = ['input:=' + point_cloud_topic,
-                '_binary:=True',
-                '_fixed_frame:=' + frame,
-                '_prefix:=' + args.dataset_path]
+    cloud_saver_cli_args = ['input:=/passthrough/box_filtered',
+                            '_binary:=True',
+                            '_fixed_frame:=' 'bin_link',
+                            '_prefix:=']
 
     while pub.get_num_connections() == 0:
         rospy.sleep(0.1)
@@ -101,9 +110,11 @@ def main():
         # start cloud saver
         launch = roslaunch.scriptapi.ROSLaunch()
         launch.start()
-        cli_args[3] = '_prefix:=' + sample_dir + '/cloud_' + str(i) + '_'
-        node = roslaunch.core.Node(saver_package, saver_node, args=' '.join(cli_args))
-        process = launch.launch(node)
+        cloud_saver_cli_args[3] = '_prefix:=' + sample_dir + '/cloud_' + str(i) + '_'
+        cloud_saver_node = roslaunch.core.Node('pcl_ros', 'pointcloud_to_pcd', args=' '.join(cloud_saver_cli_args))
+        process_cloud = launch.launch(cloud_saver_node)
+        rgb_sub = rospy.Subscriber('/zivid_camera/color/image_color', Image, rgb_callback, (sample_dir, i))
+        depth_sub = rospy.Subscriber('/zivid_camera/depth/image', Image, depth_callback, (sample_dir, i))
 
         # format Pose msg
         msg.header.seq = i
@@ -122,7 +133,11 @@ def main():
         pc2_msg = rospy.wait_for_message("/zivid_camera/points/xyzrgba", PointCloud2)
 
         rospy.sleep(2)  # wait camera capture frame and point cloud saver saves it
-        process.stop()
+
+        process_cloud.stop()
+        rgb_sub.unregister()
+        depth_sub.unregister()
+
 
 if __name__ == '__main__':
     try:
