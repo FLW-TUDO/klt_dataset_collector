@@ -12,6 +12,8 @@ from sensor_msgs.msg import Image
 
 from zivid_camera.srv import *
 
+from termios import tcflush, TCIFLUSH
+
 bridge = CvBridge()
 
 class Sample:
@@ -98,45 +100,54 @@ def main():
     msg.header.frame_id = 'iiwa_link_0'
 
     count = args.start_count
-    sample_dir = args.dataset_path + '/' + f"{count:05}"
-    if os.path.exists(sample_dir):
-        rospy.logerr("Sample number already exist. Count: " + str(count))
-        rospy.logerr("Need manual help, Exiting ...")
-        exit()
-    else:
-        os.mkdir(sample_dir)
+    while True:
+        os.system('clear')
+        tcflush(sys.stdin, TCIFLUSH)
+        input('Press Enter to start collecting sample ' +  str(f"{count:05}"))
+        rospy.loginfo('Collecting Sample ' + str(f"{count:05}"))
+        sample_dir = args.dataset_path + '/' + f"{count:05}"
+        if os.path.exists(sample_dir):
+            rospy.logerr("Sample number already exist. Count: " + str(count))
+            rospy.logerr("Need manual help, Exiting ...")
+            exit()
+        else:
+            os.mkdir(sample_dir)
 
-    for i in range(len(position)):
-        # start cloud saver
-        launch = roslaunch.scriptapi.ROSLaunch()
-        launch.start()
-        cloud_saver_cli_args[3] = '_prefix:=' + sample_dir + '/cloud_' + str(i) + '_'
-        cloud_saver_node = roslaunch.core.Node('pcl_ros', 'pointcloud_to_pcd', args=' '.join(cloud_saver_cli_args))
-        process_cloud = launch.launch(cloud_saver_node)
-        rgb_sub = rospy.Subscriber('/zivid_camera/color/image_color', Image, rgb_callback, (sample_dir, i))
-        depth_sub = rospy.Subscriber('/zivid_camera/depth/image', Image, depth_callback, (sample_dir, i))
+        for i in range(len(position)):
+            # start cloud saver
+            launch = roslaunch.scriptapi.ROSLaunch()
+            launch.start()
+            cloud_saver_cli_args[3] = '_prefix:=' + sample_dir + '/cloud_' + str(i) + '_'
+            cloud_saver_node = roslaunch.core.Node('pcl_ros', 'pointcloud_to_pcd', args=' '.join(cloud_saver_cli_args))
+            process_cloud = launch.launch(cloud_saver_node)
+            rgb_sub = rospy.Subscriber('/zivid_camera/color/image_color', Image, rgb_callback, (sample_dir, i))
+            depth_sub = rospy.Subscriber('/zivid_camera/depth/image', Image, depth_callback, (sample_dir, i))
 
-        # format Pose msg
-        msg.header.seq = i
-        msg.pose.position.x = position[i][0]
-        msg.pose.position.y = position[i][1]
-        msg.pose.position.z = position[i][2]
-        msg.pose.orientation.x = orientation[i][0]
-        msg.pose.orientation.y = orientation[i][1]
-        msg.pose.orientation.z = orientation[i][2]
-        msg.pose.orientation.w = orientation[i][3]
-        pub.publish(msg)
-        rospy.sleep(10)  # wait till robot reach goal position
-        s.capture_assistant_suggest_settings()  # TODO is capture assistant required after every frame?
-        rospy.sleep(3)
-        s.capture()
-        pc2_msg = rospy.wait_for_message("/zivid_camera/points/xyzrgba", PointCloud2)
+            # format Pose msg
+            msg.header.seq = i
+            msg.pose.position.x = position[i][0]
+            msg.pose.position.y = position[i][1]
+            msg.pose.position.z = position[i][2]
+            msg.pose.orientation.x = orientation[i][0]
+            msg.pose.orientation.y = orientation[i][1]
+            msg.pose.orientation.z = orientation[i][2]
+            msg.pose.orientation.w = orientation[i][3]
+            pub.publish(msg)
+            rospy.sleep(10)  # wait till robot reach goal position
+            s.capture_assistant_suggest_settings()  # TODO is capture assistant required after every frame?
+            rospy.sleep(3)
+            s.capture()
+            pc2_msg = rospy.wait_for_message("/zivid_camera/points/xyzrgba", PointCloud2)
 
-        rospy.sleep(2)  # wait camera capture frame and point cloud saver saves it
+            rospy.sleep(2)  # wait camera capture frame and point cloud saver saves it
 
-        process_cloud.stop()
-        rgb_sub.unregister()
-        depth_sub.unregister()
+            process_cloud.stop()
+            rgb_sub.unregister()
+            depth_sub.unregister()
+
+            rospy.sleep(1)
+
+        count+=1
 
 
 if __name__ == '__main__':
