@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 import rospy
 import roslaunch
+import tf
+from cv_bridge import CvBridge, CvBridgeError
+
 import argparse
 import os
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
+import json
+import sys
 
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud2
@@ -70,6 +74,8 @@ def main():
     rospy.init_node('data_collector', anonymous=True)
     pub = rospy.Publisher('/iiwa/command/CartesianPose', PoseStamped, queue_size=1)
 
+    listener = tf.TransformListener()
+
     # setup PCD cloud saver
     cloud_saver_cli_args = ['input:=/passthrough/box_filtered',
                             '_binary:=True',
@@ -113,6 +119,8 @@ def main():
         else:
             os.mkdir(sample_dir)
 
+        tf_trans = {}
+
         for i in range(len(position)):
             # start cloud saver
             launch = roslaunch.scriptapi.ROSLaunch()
@@ -144,6 +152,23 @@ def main():
             process_cloud.stop()
             rgb_sub.unregister()
             depth_sub.unregister()
+
+            (trans, rot) = listener.lookupTransform('/zivid_optical_frame', '/iiwa_link_0', rospy.Time(0))
+            tf_trans["0"] = {"source_frame": "iiwa_link_0", "target_frame": "zivid_optical_frame",
+                             "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
+            (trans, rot) = listener.lookupTransform('/bin_link', '/iiwa_link_0', rospy.Time(0))
+            tf_trans["1"] = {"source_frame": "iiwa_link_0", "target_frame": "bin_link",
+                             "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
+            (trans, rot) = listener.lookupTransform('/bin_link', '/zivid_optical_frame', rospy.Time(0))
+            tf_trans["2"] = {"source_frame": "zivid_optical_frame", "target_frame": "bin_link",
+                             "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
+            tf_json = json.dumps(tf_trans)
+            json_file = open(sample_dir + '/scene_transformations.json', 'w')
+            json_file.write(tf_json)
+            json_file.close()
 
             rospy.sleep(1)
 
