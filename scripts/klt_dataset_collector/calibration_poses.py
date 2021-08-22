@@ -1,8 +1,14 @@
 #!/usr/bin/env python
-import numpy as np
 import rospy
 import tf
 from geometry_msgs.msg import PoseStamped
+
+import numpy as np
+import cv2
+import zivid
+from pathlib import Path
+
+from settings_from_file import *
 
 def main():
     np.set_printoptions(linewidth=400)
@@ -84,9 +90,16 @@ def main():
     # 21
     # 22
 
+    calibration_dir = '/home/iiwa/segmentation/calibration/zivid_calibration_data/'
+
+    # Setting Zivid camera settings
+    app = zivid.Application()
+    camera = app.connect_camera()
+    path = Path("/home/iiwa/segmentation/calibration/zivid_capture_settings/calibration_board_detection_settings.yml")
+    settings = get_settings_from_yaml(path)
 
     for i in range(len(position)):
-        input("Enter for next position.")
+        input("Press enter for next position?")
         msg.header.seq = i
         msg.pose.position.x = position[i][0]
         msg.pose.position.y = position[i][1]
@@ -95,12 +108,23 @@ def main():
         msg.pose.orientation.y = orientation[i][1]
         msg.pose.orientation.z = orientation[i][2]
         msg.pose.orientation.w = orientation[i][3]
-        rospy.loginfo("Pose "+str(i))
+        rospy.loginfo("Pose "+str(i+1))
         tros = tf.TransformerROS()
         matrix = np.array(tros.fromTranslationRotation(tuple(np.array(position[i])*1000), tuple(orientation[i])))
-        print(matrix.flatten())
-        pub.publish(msg)
+
+        f = cv2.FileStorage(calibration_dir + '/pos' + f'{i+1:02}' + '.yaml', flags=1)
+        f.write(name='PoseState', val=matrix)
+        f.release()
+
+        input("did robot reach position? [Press enter]")
+
+        frame = camera.capture(settings)
+        frame.save(calibration_dir + '/img' + f'{i+1:02}' + '.zdf')
+
         #rospy.sleep(10)
+
+    # bash command to calculate calibration
+    # ZividExperimentalHandEyeCalibration --eih -d $dataset --tf $dataset/tf.yml --rf $dataset/rf.yml
 
 if __name__ == '__main__':
     try:
