@@ -8,7 +8,7 @@ import cv2
 import zivid
 from pathlib import Path
 
-from settings_from_file import *
+from zivid_settings_from_file import *
 
 def main():
     np.set_printoptions(linewidth=400)
