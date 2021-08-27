@@ -1,9 +1,7 @@
 #!/usr/bin/python3
-import os
 import glob
 import numpy as np
 import open3d as o3d
-import copy
 import argparse
 
 import time
@@ -18,15 +16,18 @@ def main():
 
     for samples_dir in glob.glob(args.dataset_path+'/*'):
         start = time.time()
-        source = o3d.io.read_point_cloud(glob.glob(samples_dir + '/cloud_0_*.pcd')[0])  # assuming sample 0 is top and to be fixed
-        source, ind = source.remove_statistical_outlier(nb_neighbors=100, std_ratio=4.0)
+        target = o3d.io.read_point_cloud(glob.glob(samples_dir + '/cloud_0_*.pcd')[0])  # assuming sample 0 is top and to be fixed
+        target, ind = target.remove_statistical_outlier(nb_neighbors=20, std_ratio=1.5)
 
         print(samples_dir)
         for sample_path in glob.glob(samples_dir + '/*.pcd')[1:]:
             print(sample_path)
+            if sample_path[-19:] == 'assembled_cloud.pcd':
+                print('ignoring assembled_cloud.pcd; the file will be overwritten')
+                continue
 
-            target = o3d.io.read_point_cloud(sample_path)
-            target, ind = target.remove_statistical_outlier(nb_neighbors=10, std_ratio=2.0)
+            source = o3d.io.read_point_cloud(sample_path)
+            source, ind = source.remove_statistical_outlier(nb_neighbors=20, std_ratio=1.5)
 
             #o3d.visualization.draw_geometries([source, target])
 
@@ -35,8 +36,8 @@ def main():
             #print(evaluation)
 
             #print("Apply point-to-point ICP")
-            source_downsampled = source.voxel_down_sample(voxel_size=0.001)
             target_downsampled = target.voxel_down_sample(voxel_size=0.001)
+            source_downsampled = source.voxel_down_sample(voxel_size=0.001)
             #o3d.visualization.draw_geometries([source_downsampled, target_downsampled])
             reg_p2p = o3d.pipelines.registration.registration_icp(source_downsampled, target_downsampled, threshold, trans_init,
                                                                   o3d.pipelines.registration.TransformationEstimationPointToPoint(),
@@ -49,15 +50,15 @@ def main():
             #Save PCD
             # TODO should i reverse and transform the target instead of the source
             transformed_pcd = source.transform(reg_p2p.transformation)
-            source = transformed_pcd + target
-            print('before downsample:' + str(source))
-            #source = source.voxel_down_sample(voxel_size=0.0001)
-            print('after  downsample:' + str(source))
-            #o3d.visualization.draw_geometries([source])
+            target = transformed_pcd + target
+            print('before downsample:' + str(target))
+            print('after  downsample:' + str(target))
+            #o3d.visualization.draw_geometries([target])
 
-        o3d.io.write_point_cloud(samples_dir + '/assembled_cloud.pcd', source)
+        o3d.io.write_point_cloud(samples_dir + '/assembled_cloud.pcd', target)
+        target = target.voxel_down_sample(voxel_size=0.0005)
+        #o3d.visualization.draw_geometries([target])
         print("time:" + str(time.time() - start))
-        break
 
 if __name__ == '__main__':
         main()
