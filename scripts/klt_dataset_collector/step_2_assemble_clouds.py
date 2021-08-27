@@ -26,7 +26,7 @@ def main():
             print(sample_path)
 
             target = o3d.io.read_point_cloud(sample_path)
-            target, ind = target.remove_statistical_outlier(nb_neighbors=100, std_ratio=4.0)
+            target, ind = target.remove_statistical_outlier(nb_neighbors=10, std_ratio=2.0)
 
             #o3d.visualization.draw_geometries([source, target])
 
@@ -51,7 +51,7 @@ def main():
             transformed_pcd = source.transform(reg_p2p.transformation)
             source = transformed_pcd + target
             print('before downsample:' + str(source))
-            source = source.voxel_down_sample(voxel_size=0.0001)
+            #source = source.voxel_down_sample(voxel_size=0.0001)
             print('after  downsample:' + str(source))
             #o3d.visualization.draw_geometries([source])
 
