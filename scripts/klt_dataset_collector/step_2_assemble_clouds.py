@@ -20,10 +20,13 @@ def main():
         target, ind = target.remove_statistical_outlier(nb_neighbors=20, std_ratio=1.5)
 
         print(samples_dir)
-        for sample_path in glob.glob(samples_dir + '/*.pcd')[1:]:
+        for sample_path in glob.glob(samples_dir + '/*.pcd'):
             print(sample_path)
             if sample_path[-19:] == 'assembled_cloud.pcd':
                 print('ignoring assembled_cloud.pcd; the file will be overwritten')
+                continue
+            elif 'cloud_0' in sample_path:
+                print('skip cloud_0 file as it is used as the target cloud.')
                 continue
 
             source = o3d.io.read_point_cloud(sample_path)

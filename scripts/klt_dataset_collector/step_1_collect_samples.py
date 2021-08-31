@@ -152,24 +152,28 @@ def main():
             rgb_sub.unregister()
             depth_sub.unregister()
 
-            (trans, rot) = listener.lookupTransform('/zivid_optical_frame', '/iiwa_link_0', rospy.Time(0))
-            tf_trans["0"] = {"source_frame": "iiwa_link_0", "target_frame": "zivid_optical_frame",
+            tf_view = list()
+            (trans, rot) = listener.lookupTransform('/iiwa_link_0', '/zivid_optical_frame', rospy.Time(0))
+            tf_view.append({"source_frame": "iiwa_link_0", "target_frame": "zivid_optical_frame",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
-                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
-            (trans, rot) = listener.lookupTransform('/bin_link', '/iiwa_link_0', rospy.Time(0))
-            tf_trans["1"] = {"source_frame": "iiwa_link_0", "target_frame": "bin_link",
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
+            (trans, rot) = listener.lookupTransform('/iiwa_link_0', '/bin_link', rospy.Time(0))
+            tf_view.append({"source_frame": "iiwa_link_0", "target_frame": "bin_link",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
-                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
-            (trans, rot) = listener.lookupTransform('/bin_link', '/zivid_optical_frame', rospy.Time(0))
-            tf_trans["2"] = {"source_frame": "zivid_optical_frame", "target_frame": "bin_link",
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
+            (trans, rot) = listener.lookupTransform('/zivid_optical_frame', '/bin_link', rospy.Time(0))
+            tf_view.append({"source_frame": "zivid_optical_frame", "target_frame": "bin_link",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
-                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}}
-            tf_json = json.dumps(tf_trans)
-            json_file = open(sample_dir + '/scene_transformations.json', 'w')
-            json_file.write(tf_json)
-            json_file.close()
+                             "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
+            tf_trans[str(i)] = tf_view
 
             rospy.sleep(1)
+
+        tf_json = json.dumps(tf_trans)
+        json_file = open(sample_dir + '/scene_transformations.json', 'w')
+        json_file.write(tf_json)
+        json_file.close()
+
 
         count+=1
 
