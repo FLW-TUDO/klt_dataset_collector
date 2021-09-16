@@ -15,6 +15,7 @@ def callback(data):
     
     br.sendTransform((0,0,0),(0,0,0,1),rospy.Time.now(),"iiwa_link_0","world")
     br.sendTransform((0.86, 0, -0.575),(0,0,0,1),rospy.Time.now(),"bin_link","world")
+    br.sendTransform((1.285, 0, -0.46),(0,0,0,1),rospy.Time.now(),"table_link","world")
 
 def main():
     '''
