@@ -64,6 +64,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-path", default='/home/iiwa/segmentation/flw_dataset')
     parser.add_argument("--start-count", type=int, default=0)
+    parser.add_argument("--filter-type", default='table', help='bin or table')
     args = parser.parse_args()
 
     if not os.path.exists(args.dataset_path):
@@ -76,7 +77,7 @@ def main():
     listener = tf.TransformListener()
 
     # setup PCD cloud saver
-    cloud_saver_cli_args = ['input:=/passthrough/box_filtered',
+    cloud_saver_cli_args = ['input:=' + args.filter_type + '_filter/' + args.filter_type + '_filter/box_filtered',
                             '_binary:=True',
                             '_fixed_frame:=' 'bin_link',
                             '_prefix:=']
@@ -90,15 +91,32 @@ def main():
     position = list()
     orientation = list()
     # capture positions
-    # 1 - top
-    position.append([0.4536302081007271, 0.00014568127071799047, 0.465632596695722])
-    orientation.append([0.00033934633884419606, 0.9884247183799744, -2.754895333484324e-05, 0.1517116969851703])
-    # 2 - right
-    position.append([0.598213268524855, -0.46227607401174414, 0.3893305460186694])
-    orientation.append([-0.09238601030833919, 0.9627739191055298, 0.2428643130344425, 0.07448597649883315])
-    # 3 - left
-    position.append([0.5921051907749318, 0.467128419984067, 0.40259435352400785])
-    orientation.append([-0.10990742800801294, 0.9505132436752319, -0.2813433794214693, 0.0727384796493719])
+    if args.filter_type == 'bin':
+        # 1 - top
+        position.append([0.4536302081007271, 0.00014568127071799047, 0.465632596695722])
+        orientation.append([0.00033934633884419606, 0.9884247183799744, -2.754895333484324e-05, 0.1517116969851703])
+        # 2 - right
+        position.append([0.598213268524855, -0.46227607401174414, 0.3893305460186694])
+        orientation.append([-0.09238601030833919, 0.9627739191055298, 0.2428643130344425, 0.07448597649883315])
+        # 3 - left
+        position.append([0.5921051907749318, 0.467128419984067, 0.40259435352400785])
+        orientation.append([-0.10990742800801294, 0.9505132436752319, -0.2813433794214693, 0.0727384796493719])
+    elif args.filter_type == 'table':
+        # 1 - top tilted
+        position.append([0.45366535956448795, 0.00019003750267646333, 0.7788801811010954])
+        orientation.append([0.0014396677025957014, 0.9728067517280579, -0.00028660261442955726, 0.23161359892331101])
+        # 2 - right
+        position.append([0.44258463088703054, -0.4911573773280114, 0.6543658294324605])
+        orientation.append([0.2552882853983005, 0.9138663411140442, 0.2506485566196609, 0.1919673573426694])
+        # 3 - left
+        position.append([0.3179112403677761, 0.5951135610348454, 0.34818191358262757])
+        orientation.append([0.17968118618225037, 0.9074693322181702, -0.07799770812562887, 0.3716590689952614])
+        # right down
+        position.append([0.6455294403996836, -0.42170832216318355, -0.008022791903315238])
+        orientation.append([0.3345335858576662, 0.7673130035400391, 0.515384421634103, 0.18356725324507037])
+        # left down
+        position.append([0.620483350232771, 0.4967904848477807, 0.019487615238156706])
+        orientation.append([-0.5770074081867963, 0.617912232875824, -0.5260044420860153, 0.09255396959828174])
 
     msg = PoseStamped()
     msg.header.stamp = rospy.Time.now()
