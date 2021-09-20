@@ -1,0 +1,47 @@
+<launch>
+  <arg name="filter_type" value="table_filter"/>
+  <arg name="filter_link" value="table_link"/>
+  <group ns="$(arg filter_type)">
+    <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+
+    <node pkg="nodelet" type="nodelet" name="passthrough_z" args="load pcl/PassThrough pcl_manager" output="screen">
+      <remap from="~input" to="/zivid_camera/points/xyzrgba"/>
+      <remap from="~output" to="$(arg filter_type)/passthrough/z_filtered"/>
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min:  -0.03
+        filter_limit_max:  0.35
+        filter_limit_negative: False
+      </rosparam>
+      <param name="~input_frame" type="str" value="$(arg filter_link)" />
+      <param name="~output_frame" type="str" value="$(arg filter_link)" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="passthrough_y" args="load pcl/PassThrough pcl_manager" output="screen">
+      <remap from="~input" to="$(arg filter_type)/passthrough/z_filtered"/>
+      <remap from="~output" to="$(arg filter_type)/passthrough/y_filtered"/>
+      <rosparam>
+        filter_field_name: y
+        filter_limit_min:  -0.4
+        filter_limit_max:  0.4
+        filter_limit_negative: False
+      </rosparam>
+      <param name="~input_frame" type="str" value="$(arg filter_link)" />
+      <param name="~output_frame" type="str" value="$(arg filter_link)" />
+    </node>
+
+
+    <node pkg="nodelet" type="nodelet" name="passthrough_x" args="load pcl/PassThrough pcl_manager" output="screen">
+      <remap from="~input" to="$(arg filter_type)/passthrough/y_filtered"/>
+      <remap from="~output" to="$(arg filter_type)/box_filtered"/>
+      <rosparam>
+        filter_field_name: x
+        filter_limit_min:  -0.4
+        filter_limit_max:  0.4
+        filter_limit_negative: False
+      </rosparam>
+      <param name="~input_frame" type="str" value="$(arg filter_link)" />
+      <param name="~output_frame" type="str" value="$(arg filter_link)" />
+    </node>
+  </group>
+</launch>

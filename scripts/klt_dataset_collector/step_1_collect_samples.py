@@ -76,10 +76,14 @@ def main():
 
     listener = tf.TransformListener()
 
+    if args.filter_type == 'bin':
+        scene_link = 'bin_link'
+    elif args.filter_type == 'table':
+        scene_link = 'table_link'
     # setup PCD cloud saver
     cloud_saver_cli_args = ['input:=' + args.filter_type + '_filter/' + args.filter_type + '_filter/box_filtered',
                             '_binary:=True',
-                            '_fixed_frame:=' 'bin_link',
+                            '_fixed_frame:=' + scene_link,
                             '_prefix:=']
 
     while pub.get_num_connections() == 0:
@@ -175,12 +179,12 @@ def main():
             tf_view.append({"source_frame": "iiwa_link_0", "target_frame": "zivid_optical_frame",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
                              "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
-            (trans, rot) = listener.lookupTransform('/iiwa_link_0', '/bin_link', rospy.Time(0))
-            tf_view.append({"source_frame": "iiwa_link_0", "target_frame": "bin_link",
+            (trans, rot) = listener.lookupTransform('/iiwa_link_0', scene_link, rospy.Time(0))
+            tf_view.append({"source_frame": "iiwa_link_0", "target_frame": "scene_link",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
                              "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
-            (trans, rot) = listener.lookupTransform('/zivid_optical_frame', '/bin_link', rospy.Time(0))
-            tf_view.append({"source_frame": "zivid_optical_frame", "target_frame": "bin_link",
+            (trans, rot) = listener.lookupTransform('/zivid_optical_frame', scene_link, rospy.Time(0))
+            tf_view.append({"source_frame": "zivid_optical_frame", "target_frame": "scene_link",
                              "translation": {"x": trans[0], "y": trans[1], "z": trans[2]},
                              "rotation_quaternion": {"x": rot[0], "y": rot[1], "z": rot[2], "w": rot[3]}})
             tf_trans[str(i)] = tf_view
