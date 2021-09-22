@@ -19,7 +19,11 @@ This image for a scene take fro 3 images where first raw is RGB, second is depth
 
 # Trained CNN inference on this data
 We trained a CNN for object agnostic segmentation. This next image is the result of the inference on one of the samples in this data.
+
 ![image](./images/inference.jpg)
+
 All the false detections are coming from the background, which can easily be masked out form the image.
+
+The whole dataset will be released around end of November 2022. [This folder](https://tu-dortmund.sciebo.de/s/sncfv4ewSyblVtv) contains some of the samples. To get the whole dataset before the full release, then please contact [me](mailto:anas.gouda@tu-dortmund.de).
 
 The whole pipeline for efficient classification and pose estimation of varying number of classes based on class agnostic segmentation will be added here soon.
