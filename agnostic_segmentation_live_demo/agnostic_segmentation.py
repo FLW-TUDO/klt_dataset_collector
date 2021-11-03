@@ -13,7 +13,7 @@ import rospkg
 
 setup_logger()  # initialize the detectron2 logger and set its verbosity level to “DEBUG”.
 
-def segment_image(im_input):
+def segment_image(im_input_input, im_input_visualize):
     confidence = 0.95
 
     # --- var dec ---
@@ -34,10 +34,10 @@ def segment_image(im_input):
     predictor = DefaultPredictor(cfg)
 
     start = time.time()
-    outputs = predictor(im_input)
+    outputs = predictor(im_input_input)
     end = time.time()
     print("Inference time: ", end - start)
-    v = Visualizer(im_input,
+    v = Visualizer(im_input_visualize,
                    metadata=kitchen0_metadata,
                    scale=0.5,
                    instance_mode=ColorMode.IMAGE

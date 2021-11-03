@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+import copy
+
 import rospy
 import roslaunch
 import tf
 from cv_bridge import CvBridge, CvBridgeError
+import rospkg
 
 import argparse
 import os
 import cv2
 import json
 import sys
+import numpy as np
 
 from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import PointCloud2
@@ -63,7 +67,9 @@ def rgb_callback(msg, args):
 
 def depth_callback(msg, args):
     global depth_img
-    depth_img = bridge.imgmsg_to_cv2(msg, "32FC1") * 100  # multiply by 100 to convert to cm
+    depth_img = bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+    #cv2.imwrite("/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/agnostic_segmentation_live_demo/background_masks/bin_depth.png", depth_img)
+    #np.save("/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/agnostic_segmentation_live_demo/background_masks/table_depth.npy", depth_img)
 
 def main():
     global rgb_img, depth_img
@@ -71,6 +77,9 @@ def main():
     pub = rospy.Publisher('/iiwa/command/CartesianPose', PoseStamped, queue_size=1)
 
     listener = tf.TransformListener()
+
+    rospack = rospkg.RosPack()
+    rospack.list()
 
     while pub.get_num_connections() == 0:
         rospy.loginfo("Waiting for iiwa robot connection")
@@ -89,6 +98,7 @@ def main():
     position.append([0.2779583675156155, 0.26275243409152355, 0.7777829205816456])
     orientation.append([-0.35845471352424463, 0.9005717039108276, 0.09117319958905871, 0.2284038586206499])
 
+    ROI = [np.array([[440,255],[1455,260],[1505,920],[400,930]]), np.array([[480,90],[1450,90],[1680,1045],[360,1090]])]
     msg = PoseStamped()
     msg.header.stamp = rospy.Time.now()
     msg.header.frame_id = 'iiwa_link_0'
@@ -126,10 +136,28 @@ def main():
             rgb_sub.unregister()
             depth_sub.unregister()
 
-            # TODO add background removal
+            # background removal
+            t = 0.003  # tolerance
+            if i == 0:  # bin
+                bk = np.load(rospack.get_path('klt_dataset_collector') + "/agnostic_segmentation_live_demo/background_masks/bin_depth.npy")
+            elif i == 1:  # table
+                bk = np.load(rospack.get_path('klt_dataset_collector') + "/agnostic_segmentation_live_demo/background_masks/table_depth.npy")
+            rgb_img_filtered = copy.deepcopy(rgb_img)
+            d = depth_img
+            bk_mask = np.logical_and(bk - t <= d, d <= bk + t)
+            bk_mask = np.logical_and(bk_mask, ~np.isnan(bk))
+            print(np.where(bk_mask)[0].shape)
+            rgb_img_filtered[bk_mask] = np.array([0,0,0])
+            color = [255,255,255]
+            stencil = np.zeros(rgb_img.shape).astype(rgb_img.dtype)
+            cv2.fillPoly(stencil, [ROI[i]], color)
+            rgb_img_filtered = cv2.bitwise_and(rgb_img_filtered, stencil)
+            cv2.imshow('Image', rgb_img_filtered)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
-            seg_img = agnostic_segmentation.segment_image(rgb_img)
-            cv2.imshow('Segmented Image', seg_img)
+            seg_img = agnostic_segmentation.segment_image(rgb_img_filtered, rgb_img)
+            cv2.imshow('Image', seg_img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
