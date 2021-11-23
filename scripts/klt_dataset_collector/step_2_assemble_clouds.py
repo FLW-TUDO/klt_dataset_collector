@@ -17,7 +17,7 @@ def main():
 
     for samples_dir in glob.glob(args.dataset_path+'/*'):
         start = time.time()
-        target = o3d.io.read_point_cloud(glob.glob(samples_dir + '/cloud_0_*.pcd')[0])  # assuming sample 0 is top and to be fixed
+        target = o3d.io.read_point_cloud(glob.glob(samples_dir + '/cloud/000000_*.pcd')[0])  # assuming sample 0 is top and to be fixed
         target, ind = target.remove_statistical_outlier(nb_neighbors=20, std_ratio=1.5)
 
         # if table scene then remove table surface and don't down sample
@@ -29,13 +29,13 @@ def main():
             target_downsampled = target.voxel_down_sample(voxel_size=0.001)
 
         print(samples_dir)
-        for sample_path in glob.glob(samples_dir + '/*.pcd'):
+        for sample_path in glob.glob(samples_dir + '/cloud/*.pcd'):
             print(sample_path)
             if sample_path[-19:] == 'assembled_cloud.pcd':
                 print('ignoring assembled_cloud.pcd; the file will be overwritten')
                 continue
-            elif 'cloud_0' in sample_path:
-                print('skip cloud_0 file as it is used as the target cloud.')
+            elif '000000' in sample_path:
+                print('skip cloud 0 file as it is used as the target cloud.')
                 continue
             # UNCOMMENT to use scenes 0,1,2 only. Use in case of noisy clouds
             #elif int(sample_path[-22]) > 2:
@@ -77,7 +77,7 @@ def main():
             print('after  downsample:' + str(target))
             #o3d.visualization.draw_geometries([target])
 
-        o3d.io.write_point_cloud(samples_dir + '/assembled_cloud.pcd', target)
+        o3d.io.write_point_cloud(samples_dir + '/cloud/assembled_cloud.pcd', target)
         target = target.voxel_down_sample(voxel_size=0.0005)
         #o3d.visualization.draw_geometries([target])
         print("time:" + str(time.time() - start))
