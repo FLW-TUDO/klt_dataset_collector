@@ -53,11 +53,12 @@ class Sample:
 
 def rgb_callback(msg, args):
     rgb_img = bridge.imgmsg_to_cv2(msg, "bgr8")
-    cv2.imwrite(args[0]+ '/color_' + str(args[1]) + '.png', rgb_img)
+    cv2.imwrite(args[0] + '/rgb/' + f"{args[1]:06}" + '.png', rgb_img)
 
 def depth_callback(msg, args):
-    depth_img = bridge.imgmsg_to_cv2(msg, "32FC1") * 100  # multiply by 100 to convert to cm
-    cv2.imwrite(args[0]+ '/depth_' + str(args[1]) + '.png', depth_img)
+    depth_img = bridge.imgmsg_to_cv2(msg, "16UC1") * 10000  # convert resolution from meter to 1/10 mm
+    # Note depth scale in BOP is 0.1
+    cv2.imwrite(args[0] + '/depth/' + f"{args[1]:06}" + '.png', depth_img)
 
 def main():
     # read arguments
@@ -97,30 +98,42 @@ def main():
     # capture positions
     if args.filter_type == 'bin':
         # 1 - top
-        position.append([0.4536302081007271, 0.00014568127071799047, 0.465632596695722])
-        orientation.append([0.00033934633884419606, 0.9884247183799744, -2.754895333484324e-05, 0.1517116969851703])
-        # 2 - right
-        position.append([0.598213268524855, -0.46227607401174414, 0.3893305460186694])
-        orientation.append([-0.09238601030833919, 0.9627739191055298, 0.2428643130344425, 0.07448597649883315])
-        # 3 - left
-        position.append([0.5921051907749318, 0.467128419984067, 0.40259435352400785])
-        orientation.append([-0.10990742800801294, 0.9505132436752319, -0.2813433794214693, 0.0727384796493719])
+        position.append([0.40010042658960016, -0.40230712128976354, 0.586433233868703])
+        orientation.append([0.38184669676554683, 0.9182227253913879, -0.040387323075866455, 0.0971030723192087])
+        # right
+        position.append([0.09995268780379314, -0.6798327066524414, 0.42276478325101163])
+        orientation.append([0.41812238815860736, 0.8724203109741211, 0.1642862263735469, 0.19252671297070037])
+        # right extended
+        position.append([-0.08852583692331335, -0.7838423649695757,  0.38278872618017634])
+        orientation.append([-0.1256997951229335, 0.9399797916412354, -0.03335736578791394, 0.3154756243896394])
+        # left
+        position.append([0.5965843092650834, 0.10297097492013302, 0.480372713413665])
+        orientation.append([0.28916164994160787, 0.8849726915359497, -0.3505103786634116, 0.10174163157915642])
+        # left extended
+        position.append([0.7724643922975897, 0.12095998532630636,  0.32069815446447525])
+        orientation.append([0.5691317843938981, 0.7515872716903687, -0.26892910381104734, 0.19718711725501137])
+        # top tilted
+        position.append([0.41003542694620493, -0.33176993388317294, 0.6930441593796396])
+        orientation.append([0.8800539970397949, 0.4570231629515724, 0.0528199449492035, 0.11766420343976217])
     elif args.filter_type == 'table':
-        # 1 - top tilted
-        position.append([0.45366535956448795, 0.00019003750267646333, 0.7788801811010954])
-        orientation.append([0.0014396677025957014, 0.9728067517280579, -0.00028660261442955726, 0.23161359892331101])
-        # 2 - right
-        position.append([0.44258463088703054, -0.4911573773280114, 0.6543658294324605])
-        orientation.append([0.2552882853983005, 0.9138663411140442, 0.2506485566196609, 0.1919673573426694])
-        # 3 - left
-        position.append([0.3179112403677761, 0.5951135610348454, 0.34818191358262757])
-        orientation.append([0.17968118618225037, 0.9074693322181702, -0.07799770812562887, 0.3716590689952614])
-        # right down
-        position.append([0.6455294403996836, -0.42170832216318355, -0.008022791903315238])
-        orientation.append([0.3345335858576662, 0.7673130035400391, 0.515384421634103, 0.18356725324507037])
-        # left down
-        position.append([0.620483350232771, 0.4967904848477807, 0.019487615238156706])
-        orientation.append([-0.5770074081867963, 0.617912232875824, -0.5260044420860153, 0.09255396959828174])
+        # top
+        position.append([0.2779583675156155, 0.26275243409152355, 0.7777829205816456])
+        orientation.append([-0.35845471352424463, 0.9005717039108276, 0.09117319958905871, 0.2284038586206499])
+        # right
+        position.append([0.3794928027709814, -0.28253295485133534, 0.5972795770268642])
+        orientation.append([-0.4325898269207546, 0.824556291103363, 0.1981843983729342, 0.30609785337529444])
+        # right extended
+        position.append([0.7097662955504827, -0.24557837079110972, 0.29336527812927965])
+        orientation.append([-0.4355347391477553, 0.7903707027435303, 0.3665027905637759, 0.22649359856253057])
+        # left
+        position.append([0.24296657436741034, 0.6076877409200119, 0.6556095117823818])
+        orientation.append([-0.13007583841209175, 0.9581239223480225, 0.036903300895661385, 0.2524221221852935])
+        # left extended
+        position.append([-0.12183199428806823, 0.7319461018461745, 0.43716734779267535])
+        orientation.append([-0.0878360293412678, 0.9119853973388672, -0.03003669288141751, 0.39958138162624685])
+        # top tilted
+        position.append([0.24305885822630685, 0.33263431795949716, 0.6555593633787609])
+        orientation.append([-0.655489850536862, 0.6997860074043274, -0.055496967900669915, 0.2784827853564631])
 
     msg = PoseStamped()
     msg.header.stamp = rospy.Time.now()
@@ -129,16 +142,18 @@ def main():
     count = args.start_count
     while True:
         os.system('clear')
-        tcflush(sys.stdin, TCIFLUSH)
-        input('Press Enter to start collecting sample ' +  str(f"{count:05}"))
-        rospy.loginfo('Collecting Sample ' + str(f"{count:05}"))
-        sample_dir = args.dataset_path + '/' + f"{count:05}"
+        input('Press Enter to start collecting sample ' +  str(f"{count:06}"))
+        rospy.loginfo('Collecting Sample ' + str(f"{count:06}"))
+        sample_dir = args.dataset_path + '/' + f"{count:06}"
         if os.path.exists(sample_dir):
             rospy.logerr("Sample number already exist. Count: " + str(count))
             rospy.logerr("Need manual help, Exiting ...")
             exit()
         else:
             os.mkdir(sample_dir)
+            os.mkdir(sample_dir + '/rgb')
+            os.mkdir(sample_dir + '/depth')
+            os.mkdir(sample_dir + '/cloud')
 
         tf_trans = {}
 
@@ -146,7 +161,7 @@ def main():
             # start cloud saver
             launch = roslaunch.scriptapi.ROSLaunch()
             launch.start()
-            cloud_saver_cli_args[3] = '_prefix:=' + sample_dir + '/cloud_' + str(i) + '_'
+            cloud_saver_cli_args[3] = '_prefix:=' + sample_dir + '/cloud/' + f"{i:06}" + '_'
             cloud_saver_node = roslaunch.core.Node('pcl_ros', 'pointcloud_to_pcd', args=' '.join(cloud_saver_cli_args))
             process_cloud = launch.launch(cloud_saver_node)
             rgb_sub = rospy.Subscriber('/zivid_camera/color/image_color', Image, rgb_callback, (sample_dir, i))
