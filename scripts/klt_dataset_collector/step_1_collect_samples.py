@@ -56,8 +56,10 @@ def rgb_callback(msg, args):
     cv2.imwrite(args[0] + '/rgb/' + f"{args[1]:06}" + '.png', rgb_img)
 
 def depth_callback(msg, args):
-    depth_img = bridge.imgmsg_to_cv2(msg, "16UC1") * 10000  # convert resolution from meter to 1/10 mm
-    # Note depth scale in BOP is 0.1
+    depth_img = bridge.imgmsg_to_cv2(msg, "passthrough")
+    depth_img = depth_img * 10000  # convert resolution from meter to 1/10 mm
+    depth_img = depth_img.astype('uint16')
+    # Note depth scale in BOP is 10
     cv2.imwrite(args[0] + '/depth/' + f"{args[1]:06}" + '.png', depth_img)
 
 def main():
