@@ -16,6 +16,9 @@ def main():
     for sample_path in glob.glob(samples_path + '/*'):
         print(sample_path)
 
+        gt_info_path = os.path.join(sample_path, 'scene_gt_info.json')
+        with open(gt_info_path, "r") as gt_info_file:
+            gt_scene_info = json.load(gt_info_file)
         gt_path = os.path.join(sample_path, 'scene_gt.json')
         with open(gt_path, "r") as gt_file:
             gt_scene = json.load(gt_file)
@@ -56,13 +59,16 @@ def main():
                     depth_img = cv2.bitwise_or(depth_img, depth_img, mask=depth_img_mask)
                     cv2.imwrite(depth_img_path, depth_img)
                     # delete mask and visib_mask
-                    # os.remove(visib_img_path) # TODO uncomment
+                    os.remove(visib_img_path)
                     mask_img_path = sample_path + '/mask/' + f'{int(view):06}' + '_' + f'{remove_obj_num:06}' + '.png'
-                    # os.remove(mask_img_path) # TODO uncomment
+                    os.remove(mask_img_path)
                 for i in sorted(objects_to_remove, reverse=True):
                     del gt_scene[view][i]
+                    del gt_scene_info[view][i]
             with open(gt_path, "w") as gt_file:
                 json.dump(gt_scene, gt_file)
+            with open(gt_info_path, "w") as gt_info_file:
+                json.dump(gt_scene_info, gt_info_file)
 
 
 
