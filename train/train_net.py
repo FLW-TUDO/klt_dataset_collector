@@ -126,8 +126,15 @@ def setup(args):
     cfg.merge_from_list(args.opts)
     cfg.INPUT.MASK_FORMAT = 'bitmask'
     #cfg.INPUT.MIN_SIZE_TRAIN = 50
-    cfg.DATALOADER.NUM_WORKERS = 1
+    #cfg.DATALOADER.NUM_WORKERS = 1
     cfg.SOLVER.IMS_PER_BATCH = 1
+
+    cfg.DATASETS.TRAIN = ("hope_dataset",)
+    cfg.DATASETS.TEST = ("hope_dataset",)
+    cfg.TEST.EVAL_PERIOD = 100
+
+    cfg.OUTPUT_DIR = "/home/gouda/segmentation/training_output"
+
     cfg.freeze()
     default_setup(cfg, args)
     return cfg
