@@ -13,7 +13,7 @@ import rospkg
 
 setup_logger()  # initialize the detectron2 logger and set its verbosity level to “DEBUG”.
 
-def segment_image(im_input_input, im_input_visualize):
+def segment_image(im_input_input, im_input_visualize, model_path):
     confidence = 0.95
 
     # --- var dec ---
@@ -25,12 +25,13 @@ def segment_image(im_input_input, im_input_visualize):
     cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))  # WAS 3x.y
     rospack = rospkg.RosPack()
     rospack.list()
-    cfg.MODEL.WEIGHTS = rospack.get_path('klt_dataset_collector') + '/agnostic_segmentation_live_demo/agnostic_segmentation_model.pth'
+    cfg.MODEL.WEIGHTS = model_path
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
     cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = 1
     cfg.MODEL.ROI_BOX_HEAD.CLS_AGNOSTIC_BBOX_REG = True
     cfg.MODEL.ROI_MASK_HEAD.CLS_AGNOSTIC_MASK = True
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = confidence
+    cfg.MODEL.DEVICE = 'cpu'
     predictor = DefaultPredictor(cfg)
 
     start = time.time()
