@@ -99,24 +99,65 @@ def main():
     orientation = list()
     # capture positions
     if args.filter_type == 'bin':
-        # 1 - top
-        position.append([0.40010042658960016, -0.40230712128976354, 0.586433233868703])
-        orientation.append([0.38184669676554683, 0.9182227253913879, -0.040387323075866455, 0.0971030723192087])
-        # right
-        position.append([0.09995268780379314, -0.6798327066524414, 0.42276478325101163])
-        orientation.append([0.41812238815860736, 0.8724203109741211, 0.1642862263735469, 0.19252671297070037])
-        # right extended
-        position.append([-0.08852583692331335, -0.7838423649695757,  0.38278872618017634])
-        orientation.append([-0.1256997951229335, 0.9399797916412354, -0.03335736578791394, 0.3154756243896394])
-        # left
-        position.append([0.5965843092650834, 0.10297097492013302, 0.480372713413665])
-        orientation.append([0.28916164994160787, 0.8849726915359497, -0.3505103786634116, 0.10174163157915642])
-        # left extended
-        position.append([0.7724643922975897, 0.12095998532630636,  0.32069815446447525])
-        orientation.append([0.5691317843938981, 0.7515872716903687, -0.26892910381104734, 0.19718711725501137])
-        # top tilted
-        position.append([0.41003542694620493, -0.33176993388317294, 0.6930441593796396])
-        orientation.append([0.8800539970397949, 0.4570231629515724, 0.0528199449492035, 0.11766420343976217])
+        # middle
+        position.append([0.387, 0, 0.663])
+        orientation.append([0, 0.979, 0, 0.2])
+        # more far1
+        position.append([0.387, 0, 0.866])
+        orientation.append([0, 0.979, 0, 0.2])
+        # more far2
+        position.append([0.387, 0, 0.947])
+        orientation.append([0, 0.979, 0, 0.2])
+        # more near1
+        position.append([0.387, 0, 0.562])
+        orientation.append([0, 0.979, 0, 0.2])
+        # more near2
+        position.append([0.387, 0, 0.472])
+        orientation.append([0, 0.979, 0, 0.2])
+        # top left
+        position.append([0.387, 0, 0.663])
+        orientation.append([-0.639, 0.716, -0.231, 0.158])
+        # top right
+        position.append([0.387, 0, 0.663])
+        orientation.append([0.685, 0.699, 0.164, 0.122])
+        # top back
+        position.append([0.410, 0, 0.675])
+        orientation.append([0.955, 0.076, 0.286, 0.023])
+        # top center1
+        position.append([0.492, 0, 0.660])
+        orientation.append([0, 0.984, 0, 0.176])
+        # top center3
+        #position.append([0.688, 0, 0.650])
+        #orientation.append([0.004, 0.995, 0, 0.089])
+        # top center2
+        position.append([0.684, 0, 0.652])
+        orientation.append([0, 0.999, 0, 0.041])
+        # left side1
+        position.append([0.387, 0.070, 0.662])
+        orientation.append([0, 0.979, 0, 0.20])
+        # left side2
+        position.append([0.387, 0.153, 0.663])
+        orientation.append([0, 0.979, 0, 0.20])
+        # left side3
+        position.append([0.387, 0.153, 0.497])
+        orientation.append([0, 0.979, 0, 0.20])
+        # left side4
+        position.append([0.387, 0.153, 0.421])
+        orientation.append([0, 0.979, 0, 0.20])
+        # right side1
+        position.append([0.387, -0.094, 0.663])
+        orientation.append([0, 0.979, 0, 0.20])
+        # right side2
+        position.append([0.387, -0.182, 0.663])
+        orientation.append([0, 0.979, 0, 0.20])
+        # right side3
+        position.append([0.387, -0.182, 0.523])
+        orientation.append([0, 0.979, 0, 0.20])
+        # right side4
+        position.append([0.387, -0.182, 0.401])
+        orientation.append([0, 0.979, 0, 0.20])
+
+
     elif args.filter_type == 'table':
         # top
         position.append([0.2779583675156155, 0.26275243409152355, 0.7777829205816456])
@@ -143,7 +184,6 @@ def main():
 
     count = args.start_count
     while True:
-        os.system('clear')
         input('Press Enter to start collecting sample ' +  str(f"{count:06}"))
         rospy.loginfo('Collecting Sample ' + str(f"{count:06}"))
         sample_dir = args.dataset_path + '/' + f"{count:06}"
