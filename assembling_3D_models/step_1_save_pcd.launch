@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="pcl_ros" type="pointcloud_to_pcd" name="cloud_saver" output="screen">
+    <remap from="input" to="/passthrough/box_filtered"/>
+    <rosparam>
+      binary: True
+      
+    </rosparam>
+    <param name="~binary" type="bool" value="True" />
+    <param name="~fixed_frame" type="str" value="iiwa_link_0" />
+    <param name="~prefix" type="str" value="iiwa_scene_" />
+  </node>
+</launch>
