@@ -15,14 +15,20 @@ def callback(data):
                      "iiwa_link_0")
 
     br.sendTransform((0,0,0),(0,0,0,1),rospy.Time.now(),"iiwa_link_0","world")
-    dist = 0.86
-    angle = -45*np.pi/180
-    quaternion_bin = tf.transformations.quaternion_from_euler(0, 0, angle)  # quaternion
-    br.sendTransform((dist*np.cos(angle), dist*np.sin(angle), -0.575),list(quaternion_bin),rospy.Time.now(),"bin_link", "world")
-    dist = 1.285
-    angle = 45*np.pi/180
-    quaternion_table = tf.transformations.quaternion_from_euler(0, 0, angle)  # quaternion
-    br.sendTransform((dist*np.cos(angle), dist*np.sin(angle), -0.46),list(quaternion_table),rospy.Time.now(),"table_link","world")
+
+    #dist = 0.86
+    #angle = -45*np.pi/180
+    #quaternion_bin = tf.transformations.quaternion_from_euler(0, 0, angle)  # quaternion
+    #br.sendTransform((dist*np.cos(angle), dist*np.sin(angle), -0.575),list(quaternion_bin),rospy.Time.now(),"bin_link", "world")
+    br.sendTransform((0.8, 0, -0.375),(0,0,0,1),rospy.Time.now(),"bin_link", "world")
+
+    #dist = 1.285
+    #angle = 45*np.pi/180
+    #quaternion_table = tf.transformations.quaternion_from_euler(0, 0, angle)  # quaternion
+    #br.sendTransform((dist*np.cos(angle), dist*np.sin(angle), -0.46),list(quaternion_table),rospy.Time.now(),"table_link","world")
+    br.sendTransform((0, 1.25, -0.46),(0,0,0,1),rospy.Time.now(),"table_link","world")
+
+    br.sendTransform((0.02,0.02,0.205),(0,0,0,1),rospy.Time.now(),"vgc10_tcp","iiwa_link_ee")
 
 def main():
     '''

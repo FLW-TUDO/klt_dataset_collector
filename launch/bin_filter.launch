@@ -37,7 +37,7 @@
       <rosparam>
         filter_field_name: x
         filter_limit_min:  -0.22
-        filter_limit_max:  0.22
+        filter_limit_max:  0.28
         filter_limit_negative: False
       </rosparam>
       <param name="~input_frame" type="str" value="$(arg filter_link)" />

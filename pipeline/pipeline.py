@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-import time
-
 from gripper.onrobot_vgc10 import OnRobotVGC10
-
-import copy
 
 import rospy
 import roslaunch
@@ -12,11 +8,7 @@ import tf2_geometry_msgs
 from cv_bridge import CvBridge, CvBridgeError
 import rospkg
 
-import argparse
-import os
 import cv2
-import json
-import sys
 import numpy as np
 import open3d as o3d
 
@@ -26,14 +18,17 @@ from sensor_msgs.msg import Image
 
 from zivid_camera.srv import *
 
-from termios import tcflush, TCIFLUSH
-
 from agnostic_segmentation_live_demo import agnostic_segmentation
+
+from vector_quaternion import pose_from_vector3D
 
 bridge = CvBridge()
 
 rgb_img = None
 depth_img = None
+
+from geometry_msgs.msg import Pose
+
 
 class Zivid:
     def __init__(self):
@@ -110,6 +105,16 @@ def main():
     msg = PoseStamped()
     msg.header.stamp = rospy.Time.now()
     msg.header.frame_id = 'iiwa_link_0'
+
+    drop_position = PoseStamped()
+    drop_position.header.stamp = rospy.Time.now()
+    drop_position.pose.position.x = 0.3801143215460226
+    drop_position.pose.position.y = -0.3841013711418166
+    drop_position.pose.position.z = 0.759381750959396
+    drop_position.pose.orientation.x = 0.35727852968808477
+    drop_position.pose.orientation.y = 0.9106038808822632
+    drop_position.pose.orientation.z = -0.07019330871685607
+    drop_position.pose.orientation.w = 0.19551352664641677
 
     count = 0
     while True:
@@ -196,57 +201,66 @@ def main():
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(object_masked_rgb_img, object_masked_depth_img, depth_scale=1, convert_rgb_to_intensity=False)
         pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, intrinsic)
 
-        #o3d.visualization.draw_geometries([pcd])
+        pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+        center = pcd.get_center()
+        pcd_tree = o3d.geometry.KDTreeFlann(pcd)
+        [k, idx, _] = pcd_tree.search_knn_vector_3d(center, 1)
+        grasp_orientation_zivid = pose_from_vector3D(np.asarray(pcd.colors)[idx[0], :])
+        o = o3d.geometry.TriangleMesh.create_coordinate_frame()
+        #pcd.orient_normals_towards_camera_location(camera_location=np.array([0., 0., 0.]))
+        o3d.visualization.draw_geometries([o, pcd])
 
         # extract surface from target object and calculate center
         plane_model, inliers = pcd.segment_plane(distance_threshold=0.005, ransac_n=5, num_iterations=1000)
         plane_cloud = pcd.select_by_index(inliers)
         plane_cloud.paint_uniform_color([1.0, 0, 0])
-        o3d.visualization.draw_geometries([plane_cloud])
-        exit()
+        o3d.visualization.draw_geometries([o, plane_cloud])
 
         # move gripper 20 cm above object center
         grasp_point = plane_cloud.get_center()
-        grasp = copy.copy(msg)
+        grasp = PoseStamped()
+        grasp.header.stamp = rospy.Time.now()
         grasp.header.frame_id = 'zivid_optical_frame'
-        #grasp.header.stamp = rospy.Time.now()
+        grasp.header.stamp = rospy.Time.now()
         grasp.pose.position.x = grasp_point[0]
         grasp.pose.position.y = grasp_point[1]
-        grasp.pose.position.z = grasp_point[2] # 20 cm above grasp point
+        grasp.pose.position.z = grasp_point[2]
+        grasp.pose.orientation.x = grasp_orientation_zivid.orientation.x
+        grasp.pose.orientation.y = grasp_orientation_zivid.orientation.y
+        grasp.pose.orientation.z = grasp_orientation_zivid.orientation.z
+        grasp.pose.orientation.w = grasp_orientation_zivid.orientation.w
+
+        # transform grasp poing to ee frame and subtract gripper length
+        iiwa_ee_transform = tf_buffer.lookup_transform("iiwa_link_ee", grasp.header.frame_id, rospy.Time(0), rospy.Duration(1.0))
+        grasp_transformed = tf2_geometry_msgs.do_transform_pose(grasp, iiwa_ee_transform)
+        iiwa_vgc10_transform = tf_buffer.lookup_transform("iiwa_link_ee", "vgc10_tcp", rospy.Time(0), rospy.Duration(1.0))
+        grasp_transformed.pose.position.x = grasp_transformed.pose.position.x - iiwa_vgc10_transform.transform.translation.x
+        grasp_transformed.pose.position.y = grasp_transformed.pose.position.y - iiwa_vgc10_transform.transform.translation.y
+        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z - iiwa_vgc10_transform.transform.translation.z
+
         # transform point to iiwa_link_0 before publishing it
-        transform = tf_buffer.lookup_transform("iiwa_link_0",
-                                               grasp.header.frame_id,
-                                               rospy.Time(0),
-                                               rospy.Duration(1.0))
-        grasp_transformed = tf2_geometry_msgs.do_transform_pose(grasp, transform)
-        # TODO later use plane center normal as the orientation
-        grasp_transformed.pose.orientation.x = 0.422
-        grasp_transformed.pose.orientation.y = 0.905
-        grasp_transformed.pose.orientation.z = 0.014
-        grasp_transformed.pose.orientation.w = 0.026
-        #grasp_transformed.pose.orientation.x = orientation[i][0]
-        #grasp_transformed.pose.orientation.y = orientation[i][1]
-        #grasp_transformed.pose.orientation.z = orientation[i][2]
-        #grasp_transformed.pose.orientation.w = orientation[i][3]
-        print(grasp)
-        print(grasp_transformed)
-        # TODO subtract frame after reading it from TF
-        grasp_transformed.pose.position.x = grasp_transformed.pose.position.x - 0.02
-        grasp_transformed.pose.position.y = grasp_transformed.pose.position.y - 0.02
-        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z + 0.2 + 0.2
-        #grasp_transformed.header.stamp = rospy.Time.now()
-        pub.publish(grasp_transformed)
+        iiwa_base_transform = tf_buffer.lookup_transform("iiwa_link_0", grasp.header.frame_id, rospy.Time(0), rospy.Duration(1.0))
+        grasp_point = tf2_geometry_msgs.do_transform_pose(grasp_transformed, iiwa_base_transform)
+
+        # calc pre grasp point
+        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z - 0.2
+        pre_grasp_point = tf2_geometry_msgs.do_transform_pose(grasp_transformed, iiwa_base_transform)
+
+        # move to pre grasp position
+        pub.publish(pre_grasp_point)
         rospy.sleep(10)  # wait till robot reach goal position
 
-        # start suction move 20 down to grasp center
+        # start suction and move grasp point
         gripper.set_pressure_channel_A(80)
-        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z - 0.2
-        pub.publish(grasp_transformed)
-        rospy.sleep(10)
+        pub.publish(grasp_point)
+        rospy.sleep(5)
 
-        # go up to collect position
-        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z + 0.3
-        pub.publish(grasp_transformed)
+        # back to pre grasp position
+        pub.publish(pre_grasp_point)
+        rospy.sleep(5)  # wait till robot reach goal position
+
+        # move to 2nd bin position
+        pub.publish(drop_position)
         rospy.sleep(10)
 
         # drop object to target

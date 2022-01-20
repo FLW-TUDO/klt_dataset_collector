@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 import rospy
 import tf
 from geometry_msgs.msg import PoseStamped
 
 import numpy as np
 import cv2
-import zivid
-from pathlib import Path
 
 from zivid_settings_from_file import *
 
@@ -70,32 +68,18 @@ def main():
     position.append([0.6710875474609695, 0.45525331487654824, 0.45191995925342127])
     orientation.append([0.937463641166687, 0.33477896179350924, 0.09517647497883268, 0.005137562170093658])
     # 15
-    #position.append([0.28521981620369047, 0.14534499185074598, 0.8019985645026603])
-    #orientation.append([0.13063620655600763, 0.9757548570632935, -0.16209445290075178, 0.06754311905994297])
-    # 16
     position.append([0.5249970432472979, 0.5488184621953514, 0.3331299257242851])
     orientation.append([0.04721264898399929, 0.9144604802131653, -0.36402592554231566, 0.17034708036744772])
-    # 17
-    #position.append([-0.16905840405044606, 0.6109096037886235, 0.2522189388994385])
-    #orientation.append([-0.10771657936724757, 0.8018022775650024, -0.415598360042325, 0.41567801489321005])
-    # 18
+    # 16
     position.append([0.5526726779138548, -0.4387746396152108, -0.09703078411266751])
     orientation.append([-0.2824936352471634, 0.8743230104446411, 0.2913587023675044, 0.2662081077702107])
-    # 19
-    position.append([0.4530765837343381, -0.4103392654031435, 0.6561062513395054])
-    orientation.append([-0.46335410969616686, 0.8601099848747253, 0.17332141576610524, 0.12439237233997577])
-    # 20
-    position.append([0.2143618386035868, -0.544967303372285, 0.5414045235547542])
-    orientation.append([-0.19215964770195215, 0.9266026616096497, 0.29144397322880006, 0.1397946556843015])
-    # 21
-    # 22
 
-    calibration_dir = '/home/iiwa/segmentation/calibration/zivid_calibration_data/'
+    calibration_dir = '/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/calibration_data/calibration_*_*'
 
     # Setting Zivid camera settings
     app = zivid.Application()
     camera = app.connect_camera()
-    path = Path("/home/iiwa/segmentation/calibration/zivid_capture_settings/calibration_board_detection_settings.yml")
+    path = Path("/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/calibration/calibration_board_detection_settings.yml")
     settings = get_settings_from_yaml(path)
 
     for i in range(len(position)):
@@ -108,11 +92,13 @@ def main():
         msg.pose.orientation.y = orientation[i][1]
         msg.pose.orientation.z = orientation[i][2]
         msg.pose.orientation.w = orientation[i][3]
+        pub.publish(msg)
         rospy.loginfo("Pose "+str(i+1))
         tros = tf.TransformerROS()
         matrix = np.array(tros.fromTranslationRotation(tuple(np.array(position[i])*1000), tuple(orientation[i])))
 
-        f = cv2.FileStorage(calibration_dir + '/pos' + f'{i+1:02}' + '.yaml', flags=1)
+        matrix_dir = calibration_dir + '/pos' + f'{i+1:02}' + '.yaml'
+        f = cv2.FileStorage(matrix_dir, flags=1)
         f.write(name='PoseState', val=matrix)
         f.release()
 

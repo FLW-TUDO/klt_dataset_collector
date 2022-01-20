@@ -102,6 +102,7 @@ def main():
         # middle
         position.append([0.387, 0, 0.663])
         orientation.append([0, 0.979, 0, 0.2])
+
         # more far1
         position.append([0.387, 0, 0.866])
         orientation.append([0, 0.979, 0, 0.2])
@@ -132,30 +133,38 @@ def main():
         # top center2
         position.append([0.684, 0, 0.652])
         orientation.append([0, 0.999, 0, 0.041])
+
         # left side1
         position.append([0.387, 0.070, 0.662])
         orientation.append([0, 0.979, 0, 0.20])
         # left side2
-        position.append([0.387, 0.153, 0.663])
-        orientation.append([0, 0.979, 0, 0.20])
+        position.append([0.397, 0.131, 0.669])
+        orientation.append([-0.202, 0.947, -0.121, 0.215])
         # left side3
-        position.append([0.387, 0.153, 0.497])
-        orientation.append([0, 0.979, 0, 0.20])
+        position.append([0.501, 0.152, 0.496])
+        orientation.append([-0.193, 0.949, -0.179, 0.169])
         # left side4
-        position.append([0.387, 0.153, 0.421])
-        orientation.append([0, 0.979, 0, 0.20])
+        position.append([0.594, 0.231, 0.494])
+        orientation.append([-0.296, 0.913, -0.250, 0.125])
+        # left side5
+        position.append([0.747, 0.191, 0.450])
+        orientation.append([-0.437, 0.863, -0.250, 0.037])
+
         # right side1
-        position.append([0.387, -0.094, 0.663])
-        orientation.append([0, 0.979, 0, 0.20])
-        # right side2
         position.append([0.387, -0.182, 0.663])
         orientation.append([0, 0.979, 0, 0.20])
+        # right side2
+        position.append([0.377, -0.164, 0.644])
+        orientation.append([0.058, 0.977, 0.120, 0.16])
         # right side3
-        position.append([0.387, -0.182, 0.523])
-        orientation.append([0, 0.979, 0, 0.20])
+        position.append([0.437, -0.265, 0.595])
+        orientation.append([0.248, 0.953, 0.120, 0.12])
         # right side4
-        position.append([0.387, -0.182, 0.401])
-        orientation.append([0, 0.979, 0, 0.20])
+        position.append([0.514, -0.248, 0.470])
+        orientation.append([0.454, 0.857, 0.227, 0.086])
+        # right side5
+        position.append([0.552, -0.293, 0.424])
+        orientation.append([0.739, 0.592, 0.320, -0.007])
 
 
     elif args.filter_type == 'table':
