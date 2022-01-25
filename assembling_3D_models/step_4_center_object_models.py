@@ -10,7 +10,7 @@ opt = viewer.get_render_option()
 opt.point_size = 1
 opt.show_coordinate_frame = True
 
-cloud_path = '/home/gouda/segmentation/datasets/ML2R_segmentation_dataset/assembled.pcd'
+cloud_path = '/home/gouda/segmentation/3d_scan/scans_15decs/FINALIZING_MODELS/original/heinz_ketchup.ply'
 original_pcd = o3d.io.read_point_cloud(cloud_path)
 cl, ind = original_pcd.remove_radius_outlier(nb_points=30, radius=0.02)
 original_pcd = original_pcd.select_by_index(ind)
@@ -31,9 +31,9 @@ print(p.as_matrix())
 pcd_aligned.rotate(p.inv().as_matrix())
 
 # rotate object to have main face facing front
-rot_mat = o3d.geometry.get_rotation_matrix_from_xyz([0, 0, -3*np.pi/180])
+rot_mat = o3d.geometry.get_rotation_matrix_from_xyz([0, 0, 0])
 pcd_aligned.rotate(rot_mat)
-rot_mat = o3d.geometry.get_rotation_matrix_from_xyz([-10*np.pi/180, 0, 0])
+rot_mat = o3d.geometry.get_rotation_matrix_from_xyz([0, 0, 0])
 pcd_aligned.rotate(rot_mat)
 
 # calculate OBB after aligning

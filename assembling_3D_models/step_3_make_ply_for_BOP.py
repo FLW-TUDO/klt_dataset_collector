@@ -1,16 +1,19 @@
 import open3d as o3d
+import open3d.visualization
 import trimesh
 import numpy as np
 import glob
 import os
 
-path = os.getcwd()
-for file in glob.glob("*.pcd"):
+#path = os.getcwd()
+path = '/home/gouda/segmentation/3d_scan/scans_15decs/FINALIZING_MODELS/poisson'
+for file in glob.glob(os.path.join(path,"*.ply")):
     print("Processing: " + file)
     pcd = o3d.io.read_point_cloud(os.path.join(path, file))
+    #open3d.visualization.draw_geometries([pcd])
     pcd.estimate_normals()
     #if file == "****.pcd": # around 1 million points. algorithm gets stuck. reduce by downsample to reduce points
-    #    pcd = pcd.voxel_down_sample(voxel_size=0.0005)
+    pcd = pcd.voxel_down_sample(voxel_size=0.0005)
     #    print("red bowl")
 
     # estimate radius for rolling ball
@@ -30,7 +33,7 @@ for file in glob.glob("*.pcd"):
 
     #tri_mesh.export(os.path.join(path, file[:-3] + "ply"))
     result = trimesh.exchange.ply.export_ply(tri_mesh, encoding='ascii',  vertex_normal=True)
-    output_file = open(os.path.join(path, file[:-3] + "ply"), "wb+")
+    output_file = open(os.path.join(path, file[:-4] + "_bop.ply"), "wb+")
     output_file.write(result)
     output_file.close()
 
