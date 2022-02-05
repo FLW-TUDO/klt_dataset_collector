@@ -3,7 +3,7 @@ import os
 import json
 
 def main():
-    dataset_path = '/home/gouda/segmentation/datasets/ML2R_segmentation_dataset_BOP_format/ml2r/test'
+    dataset_path = '/home/gouda/segmentation/datasets/ML2R_segmentation_dataset_BOP_format/ml2r/remove'
     delete_views = [6,7,18,19] # zero based count
     num_of_views = 20
     for sample in glob.glob(dataset_path + '/*'):
@@ -28,7 +28,7 @@ def main():
                 f.truncate()
 
         # rename all files and json
-        all = list(range(20))
+        all = list(range(num_of_views))
         remaining_views = [x for x in all if x not in delete_views]
         for view in remaining_views:
             os.rename(os.path.join(sample, "rgb", f'{view:06}'+'.png'), os.path.join(sample, "rgb", f'{remaining_views.index(view):06}'+'.png'))
