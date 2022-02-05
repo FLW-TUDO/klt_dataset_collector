@@ -15,7 +15,7 @@ Therefore, we recommend you to use detectron2 as an library and take
 this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
-
+import glob
 import logging
 import os
 from collections import OrderedDict
@@ -129,11 +129,21 @@ def setup(args):
     #cfg.DATALOADER.NUM_WORKERS = 1
     cfg.SOLVER.IMS_PER_BATCH = 1
 
-    cfg.DATASETS.TRAIN = ("hope_dataset",)
-    cfg.DATASETS.TEST = ("hope_dataset",)
+    training_datasets = list()
+    for sample in range(127, 219):
+            training_datasets.append("ml2r_dataset_" + str(sample))
+    cfg.DATASETS.TRAIN = training_datasets
+    #cfg.DATASETS.TEST = ("ml2r_dataset_126",)
+    cfg.DATASETS.TEST = ("ml2r_dataset_206",)
     cfg.TEST.EVAL_PERIOD = 100
 
-    cfg.OUTPUT_DIR = "/home/gouda/segmentation/training_output"
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+
+    cfg.SOLVER.MAX_ITER=10000
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
+    cfg.SOLVER.BASE_LR = 0.00025
+
+    cfg.OUTPUT_DIR = "/media/gouda/6DB934E957073F8F/training_output"
 
     cfg.freeze()
     default_setup(cfg, args)
@@ -160,9 +170,13 @@ def main(args):
     consider writing your own training loop (see plain_train_net.py) or
     subclassing the trainer.
     """
-    register_coco_instances("hope_dataset", {},
-                            "/home/gouda/segmentation/datasets/hope/val_real/000001/scene_gt_coco.json",
-                            "/home/gouda/segmentation/datasets/hope/val_real/000001")
+    dataset_path = '/media/gouda/6DB934E957073F8F/datasets/ml2r/train'
+    for sample in range(126, 220):
+        print(sample)
+        register_coco_instances("ml2r_dataset_" + str(sample), {},
+                                os.path.join(dataset_path, f'{sample:06}', "scene_gt_coco_agnostic.json"),
+                                os.path.join(dataset_path, f'{sample:06}'))
+
     trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
     if cfg.TEST.AUG.ENABLED:
@@ -174,7 +188,8 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
-    args.config_file = "/home/gouda/segmentation/detectron2/configs/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml"
+    args.config_file = "/home/gouda/segmentation/data_collection_ws/src/klt_dataset_collector/train/mask_rcnn_R_50_FPN_1x.yaml"
+    args.resume = True
     print("Command Line Args:", args)
     launch(
         main,
