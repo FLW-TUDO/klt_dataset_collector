@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+import copy
+
 from gripper.onrobot_vgc10 import OnRobotVGC10
 
 import rospy
 import roslaunch
 import tf2_ros
 import tf2_geometry_msgs
+import tf.transformations as tr
 from cv_bridge import CvBridge, CvBridgeError
 import rospkg
 
@@ -13,6 +16,7 @@ import numpy as np
 import open3d as o3d
 
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Image
 
@@ -167,84 +171,106 @@ def main():
         #cv2.destroyAllWindows()
 
         # extract instances
-        model_path = '/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/agnostic_segmentation_live_demo/agnostic_segmentation_model.pth'
-        seg_img, predictions = agnostic_segmentation.segment_image(rgb_img, rgb_img, model_path)
+        #model_path = '/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/agnostic_segmentation_live_demo/agnostic_segmentation_model.pth'
+        #seg_img, predictions = agnostic_segmentation.segment_image(rgb_img, rgb_img, model_path)
+        model_path = '/home/iiwa/segmentation/iiwa_ws/src/klt_dataset_collector/pipeline/FAT_5k_ML2R_0.5k.pth'
+        predictions = segmentor.segment_image(rgb_img, model_path)
+        seg_img = segmentor.draw_segmented_image(rgb_img, predictions)
 
-        cv2.imshow('Segmented image', seg_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #cv2.imshow('Segmented image', seg_img)
+        #cv2.imshow('Segmented image', cv2.resize(seg_img, (0,0), fx=0.5, fy=0.5))
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
 
-        instance = predictions["instances"].to("cpu")
-        masks = np.array([instance.pred_masks[i].cpu().detach().numpy() for i in range(len(instance))])
-        index = np.argmax([len(np.argwhere(x == True)) for x in masks]) # use the object with the biggest mask
-        pred_masks = instance.pred_masks[index].cpu().detach().numpy()
-        object_masked_rgb_img = rgb_img.copy()
-        object_masked_rgb_img[pred_masks == False] = np.array([0, 0, 0])
+        c_matrix = [1778.81005859375, 0.0, 967.9315795898438, 0.0, 1778.870361328125, 572.4088134765625, 0.0, 0.0, 1.0]
+        c_matrix = [float(i) for i in c_matrix]
+        c_matrix = np.array(c_matrix).reshape((3, 3))
 
-        cv2.imshow('Image', object_masked_rgb_img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        suction_pts = grasper.compute_suction_points(rgb_img, depth_img, c_matrix, predictions)
+        #suction_pts_image = grasper.visualize_suction_points(rgb_img, c_matrix, suction_pts)
 
-        # convert all instances to point cloud
-        # TODO change it to loop all instances
-        object_masked_depth_img = depth_img.copy()
-        object_masked_depth_img = object_masked_depth_img.astype(float)
-        x = np.argwhere(np.isnan(object_masked_depth_img))
-        #object_masked_depth_img[np.argwhere(np.isnan(object_masked_depth_img))] = 0
-        object_masked_depth_img[pred_masks == False] = 0
-        object_masked_depth_img = np.float32(object_masked_depth_img)
-        object_masked_depth_img = o3d.geometry.Image(object_masked_depth_img)
-        object_masked_rgb_img = o3d.geometry.Image(object_masked_rgb_img)
+        #cv2.imshow('suction points', suction_pts_image)
+        #cv2.imshow('suction points', cv2.resize(suction_pts_image, (0,0), fx=0.5, fy=0.5))
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
 
-        # segment a flat plane from the object
-        intrinsic = o3d.camera.PinholeCameraIntrinsic(1944, 1200, 1778.81005859375, 1778.870361328125, 967.9315795898438, 572.4088134765625)
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(object_masked_rgb_img, object_masked_depth_img, depth_scale=1, convert_rgb_to_intensity=False)
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, intrinsic)
+        # use first suction point
+        suction_pt = suction_pts[0]
 
-        pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        center = pcd.get_center()
-        pcd_tree = o3d.geometry.KDTreeFlann(pcd)
-        [k, idx, _] = pcd_tree.search_knn_vector_3d(center, 1)
-        grasp_orientation_zivid = pose_from_vector3D(np.asarray(pcd.colors)[idx[0], :])
-        o = o3d.geometry.TriangleMesh.create_coordinate_frame()
-        #pcd.orient_normals_towards_camera_location(camera_location=np.array([0., 0., 0.]))
-        o3d.visualization.draw_geometries([o, pcd])
-
-        # extract surface from target object and calculate center
-        plane_model, inliers = pcd.segment_plane(distance_threshold=0.005, ransac_n=5, num_iterations=1000)
-        plane_cloud = pcd.select_by_index(inliers)
-        plane_cloud.paint_uniform_color([1.0, 0, 0])
-        o3d.visualization.draw_geometries([o, plane_cloud])
-
-        # move gripper 20 cm above object center
-        grasp_point = plane_cloud.get_center()
         grasp = PoseStamped()
         grasp.header.stamp = rospy.Time.now()
         grasp.header.frame_id = 'zivid_optical_frame'
         grasp.header.stamp = rospy.Time.now()
-        grasp.pose.position.x = grasp_point[0]
-        grasp.pose.position.y = grasp_point[1]
-        grasp.pose.position.z = grasp_point[2]
-        grasp.pose.orientation.x = grasp_orientation_zivid.orientation.x
-        grasp.pose.orientation.y = grasp_orientation_zivid.orientation.y
-        grasp.pose.orientation.z = grasp_orientation_zivid.orientation.z
-        grasp.pose.orientation.w = grasp_orientation_zivid.orientation.w
+        grasp.pose.position.x = suction_pt[0][0]
+        grasp.pose.position.y = suction_pt[0][1]
+        grasp.pose.position.z = suction_pt[0][2]
+        grasp.pose.orientation.x = suction_pt[1][0]
+        grasp.pose.orientation.y = suction_pt[1][1]
+        grasp.pose.orientation.z = suction_pt[1][2]
+        grasp.pose.orientation.w = suction_pt[1][3]
 
-        # transform grasp poing to ee frame and subtract gripper length
-        iiwa_ee_transform = tf_buffer.lookup_transform("iiwa_link_ee", grasp.header.frame_id, rospy.Time(0), rospy.Duration(1.0))
-        grasp_transformed = tf2_geometry_msgs.do_transform_pose(grasp, iiwa_ee_transform)
-        iiwa_vgc10_transform = tf_buffer.lookup_transform("iiwa_link_ee", "vgc10_tcp", rospy.Time(0), rospy.Duration(1.0))
-        grasp_transformed.pose.position.x = grasp_transformed.pose.position.x - iiwa_vgc10_transform.transform.translation.x
-        grasp_transformed.pose.position.y = grasp_transformed.pose.position.y - iiwa_vgc10_transform.transform.translation.y
-        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z - iiwa_vgc10_transform.transform.translation.z
+        #tmp_trans = copy.copy(grasp_o.pose.position) # shift to origin - rotate - then back to original position
+        #grasp_o.pose.position.x = 0
+        #grasp_o.pose.position.y = 0
+        #grasp_o.pose.position.z = 0
+        ## grasp looking to x axis - change it to z (-90 around Z)
+        #transform = TransformStamped()
+        #transform.child_frame_id = 'zivid_optical_frame'
+        #transform.header.frame_id = 'zivid_optical_frame'
+        #transform.header.stamp = rospy.Time.now()
+        #transform.transform.translation.x = 0
+        #transform.transform.translation.y = 0
+        #transform.transform.translation.z = 0
+        #q = tr.quaternion_from_euler(0, -np.pi / 2, 0, 'rxyz')
+        #transform.transform.rotation.x = q[0]
+        #transform.transform.rotation.y = q[1]
+        #transform.transform.rotation.z = q[2]
+        #transform.transform.rotation.w = q[3]
+        #grasp_o = tf2_geometry_msgs.do_transform_pose(grasp, transform)
+        #grasp_o.pose.position = tmp_trans
+        # -------------------------------------------------------------------
+        # -------------------------------------------------------------------
+        def msg_to_se3(pose_stamped_msg):
+            msg = pose_stamped_msg.pose
+            p = np.array([msg.position.x, msg.position.y, msg.position.z])
+            q = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+            norm = np.linalg.norm(q)
+            if np.abs(norm - 1.0) > 1e-3:
+                raise ValueError("Received un-normalized quaternion (q = {0:s} ||q|| = {1:3.6f})".format(str(q), np.linalg.norm(q)))
+            elif np.abs(norm - 1.0) > 1e-6:
+                q = q / norm
+            g = tr.quaternion_matrix(q)
+            g[0:3, -1] = p
+            return g
 
-        # transform point to iiwa_link_0 before publishing it
         iiwa_base_transform = tf_buffer.lookup_transform("iiwa_link_0", grasp.header.frame_id, rospy.Time(0), rospy.Duration(1.0))
-        grasp_point = tf2_geometry_msgs.do_transform_pose(grasp_transformed, iiwa_base_transform)
+        grasp_o = tf2_geometry_msgs.do_transform_pose(grasp, iiwa_base_transform)
 
-        # calc pre grasp point
-        grasp_transformed.pose.position.z = grasp_transformed.pose.position.z - 0.2
-        pre_grasp_point = tf2_geometry_msgs.do_transform_pose(grasp_transformed, iiwa_base_transform)
+
+        H_base_tcp = msg_to_se3(grasp_o)
+        H_tcp_ee = tf_buffer.lookup_transform("iiwa_link_ee", "vgc10_tcp", rospy.Time(0), rospy.Duration(1.0))
+        # TODO change distance to read from TF transform
+        H_tcp_ee = np.array([[1,0,0,-H_tcp_ee.transform.translation.z],[0,1,0,H_tcp_ee.transform.translation.y],[0,0,1,H_tcp_ee.transform.translation.x],[0,0,0,1]])
+        #H_tcp_ee = np.array([[1,0,0,H_tcp_ee.transform.translation.x],[0,1,0,H_tcp_ee.transform.translation.y],[0,0,1,],[0,0,0,1]])
+
+        H_base_ee = np.matmul(H_base_tcp, H_tcp_ee)
+        grasp_ee = PoseStamped()
+        grasp_ee.header.stamp = rospy.Time.now()
+        grasp_ee.header.frame_id = 'iiwa_link_0'
+        grasp_ee.header.stamp = rospy.Time.now()
+        print(H_base_ee[0:3,3])
+        grasp_ee.pose.position.x = H_base_ee[0,3]
+        grasp_ee.pose.position.y = H_base_ee[1,3]
+        grasp_ee.pose.position.z = H_base_ee[2,3]
+        q = tr.quaternion_from_matrix(H_base_ee)
+        print(q)
+        grasp_ee.pose.orientation.x = q[0]
+        grasp_ee.pose.orientation.y = q[1]
+        grasp_ee.pose.orientation.z = q[2]
+        grasp_ee.pose.orientation.w = q[3]
+
+        # -------------------------------------------------------------------
+        # -------------------------------------------------------------------
 
         # move to pre grasp position
         pub.publish(pre_grasp_point)
